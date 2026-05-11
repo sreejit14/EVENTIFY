@@ -46,6 +46,21 @@ const reviewSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const messageSchema = new mongoose.Schema(
+  {
+    vendorId: { type: String, required: true, index: true },
+    userId: { type: String, required: true, index: true },
+    message: { type: String, required: true },
+    eventName: { type: String },
+    status: { type: String, default: 'sent' },
+    isAutoResponse: { type: Boolean, default: false }
+  },
+  { timestamps: true }
+);
+
+const Message = mongoose.model('Message', messageSchema);
+
+
 const User = mongoose.model('User', userSchema);
 const Booking = mongoose.model('Booking', bookingSchema);
 const Review = mongoose.model('Review', reviewSchema);
@@ -97,7 +112,7 @@ const auth = (req, res, next) => {
   if (!token) return res.status(401).json({ message: 'No token provided' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
@@ -347,8 +362,7 @@ app.post('/api/messages/send', (req, res) => {
        status: 'sent'
      };
 
-     messages.push(newMessage);
-
+await Message.create(newMessage);
      // Find vendor for response
      const vendor = vendors.find(v => v._id === vendorId);
      if (vendor) {
@@ -376,19 +390,32 @@ app.post('/api/messages/send', (req, res) => {
 });
 
 app.get('/api/messages/:userId', (req, res) => {
-   const userMessages = messages.filter(msg => msg.userId === req.params.userId);
+   const userMessages = messages.await Message.find({ userId: req.params.userId });
    res.json(userMessages);
 });
-
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
+// 1. Separate the Connection logic from the Listen logic
+const connectDB = async () => {
+  try {
+    if (mongoose.connection.readyState >= 1) return;
+    await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error('MongoDB connection failed:', error.message);
-    process.exit(1);
+  }
+};
+
+// 2. Middleware to ensure DB is connected on every request
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
+// 3. Conditional listening (Only for local development)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
+}
+
+// 4. Export for Vercel
+module.exports = app;
