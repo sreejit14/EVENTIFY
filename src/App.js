@@ -23,21 +23,21 @@ function App() {
 
 		const verifyToken = async () => {
 			try {
-				const response = axios.get('/api/vendors'), {
+				// 1. Corrected the syntax: removed the extra comma and properly closed the GET call
+				const response = await axios.get('/api/auth/profile', {
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
 				});
 
-				if (!response.ok) {
-					throw new Error("Invalid session");
-				}
-
-				const profile = await response.json();
+				// 2. Axios stores the data in .data, no need for response.json()
+				const profile = response.data; 
+				
 				localStorage.setItem("user", JSON.stringify(profile));
 				setUser(profile);
 				setIsLoggedIn(true);
 			} catch (error) {
+				console.error("Session expired or invalid token", error);
 				localStorage.removeItem("token");
 				localStorage.removeItem("user");
 				setUser(null);
@@ -45,8 +45,7 @@ function App() {
 			}
 		};
 
-		verifyToken();
-	}, []);
+		verifyToken();}, []);	
 
 	const handleLogin = (userData) => {
 		setUser(userData);
