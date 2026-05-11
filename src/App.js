@@ -23,7 +23,7 @@ function App() {
 
 		const verifyToken = async () => {
 			try {
-				const response = await fetch("http://localhost:5000/api/auth/profile", {
+				const response = axios.get('/api/vendors'), {
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
