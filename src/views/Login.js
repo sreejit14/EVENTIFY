@@ -20,7 +20,9 @@ function Login({ onLogin }) {
 				? { email, password, name }
 				: { email, password };
 
-			const response = await fetch(`http://localhost:5000${endpoint}`, {
+			// CHANGE: Removed http://localhost:5000
+			// Using a relative path allows Vercel to route the request correctly
+			const response = await fetch(endpoint, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -35,15 +37,15 @@ function Login({ onLogin }) {
 				localStorage.setItem("user", JSON.stringify(data.user));
 				onLogin(data.user);
 			} else {
-				setError(data.message);
+				setError(data.message || "Authentication failed");
 			}
 		} catch (err) {
+			console.error("Login error:", err);
 			setError("Network error. Please try again.");
 		} finally {
 			setLoading(false);
 		}
 	};
-
 	return (
 		<div className="min-h-screen bg-zinc-900 flex text-white items-center justify-center px-4">
 			<div className="bg-zinc-800 p-8 rounded-lg shadow-lg w-full max-w-md">
