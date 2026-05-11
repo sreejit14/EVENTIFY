@@ -1,3 +1,4 @@
+import axios from 'axios';
 import "./stylesheets/App.css";
 import "./stylesheets/index.css";
 import "./index.js";
