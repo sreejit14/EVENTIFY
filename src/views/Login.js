@@ -3,25 +3,32 @@ import axios from "axios";
 import eventLogo from "./assets/event_logo.png";
 
 function Login({ onLogin }) {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail]         = useState("");
+    const [password, setPassword]   = useState("");
     const [isRegister, setIsRegister] = useState(false);
-    const [name, setName] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [name, setName]           = useState("");
+    const [loading, setLoading]     = useState(false);
+    const [error, setError]         = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
+        // ✅ Added: frontend validation before hitting the server
+        if (!email || !password || (isRegister && !name)) {
+            setError("Please fill in all fields.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
-            const payload = isRegister 
-                ? { email: email.toLowerCase(), password, name } 
+            const payload  = isRegister
+                ? { email: email.toLowerCase(), password, name }
                 : { email: email.toLowerCase(), password };
 
-            // Using relative paths for Vercel deployment
+            // axios.defaults.baseURL in App.js points this to Render automatically
             const response = await axios.post(endpoint, payload);
 
             if (response.data && response.data.token) {
@@ -30,9 +37,8 @@ function Login({ onLogin }) {
                 onLogin(response.data.user);
             }
         } catch (err) {
-            console.error("Login detail error:", err.response || err);
-            // Handling the 405 or 500 errors gracefully
-            const message = err.response?.data?.message || "Server Error. Check Vercel Logs.";
+            console.error("Auth error:", err.response || err);
+            const message = err.response?.data?.message || "Server error. Please try again.";
             setError(message);
         } finally {
             setLoading(false);
