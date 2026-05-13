@@ -9,27 +9,16 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.eventify-orcin-theta.vercel.app/, // your Vercel URL
+  credentials: true
+}));
 app.use(express.json());
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/event-planner';
-
-// DB Connection Utility for Serverless
-const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) return;
-  try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
-  } catch (error) {
-    console.error('MongoDB connection failed:', error.message);
-  }
-};
-
-// Ensure DB is connected for every request
-app.use(async (req, res, next) => {
-  await connectDB();
-  next();
-});
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.log(err));
 
 // Schemas
 const userSchema = new mongoose.Schema({
