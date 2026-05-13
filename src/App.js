@@ -1,9 +1,9 @@
 import axios from 'axios';
 import "./stylesheets/App.css";
 import "./stylesheets/index.css";
-import "./index.js";
+// ✅ Fixed: removed import "./index.js" — circular import, causes crash
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./views/Login";
 import Homepage from "./views/Homepage";
 import Wedding from "./views/Wedding";
@@ -13,72 +13,90 @@ import HouseParty from "./views/HouseParty";
 import Vendors from "./views/Vendors";
 import Bookings from "./views/Bookings";
 
+// ✅ Added: single base URL — swap this when deploying to Vercel+Render
+// In production, set REACT_APP_API_URL in Vercel environment variables
+// to your Render backend URL e.g. https://your-app-backend.onrender.com
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function App() {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser]             = useState(null);
+  const [loading, setLoading]       = useState(true); // ✅ Added: prevent flash of Login on refresh
 
-	useEffect(() => {
-		const token = localStorage.getItem("token");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
-		if (!token) return;
+    const verifyToken = async () => {
+      try {
+        const response = await axios.get('/api/auth/profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const profile = response.data;
+        localStorage.setItem("user", JSON.stringify(profile));
+        setUser(profile);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error("Session expired or invalid token:", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+        setIsLoggedIn(false);
+      } finally {
+        setLoading(false); // ✅ Always stop loading whether success or fail
+      }
+    };
 
-		const verifyToken = async () => {
-			try {
-				// 1. Corrected the syntax: removed the extra comma and properly closed the GET call
-				const response = await axios.get('/api/auth/profile', {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				});
+    verifyToken();
+  }, []);
 
-				// 2. Axios stores the data in .data, no need for response.json()
-				const profile = response.data; 
-				
-				localStorage.setItem("user", JSON.stringify(profile));
-				setUser(profile);
-				setIsLoggedIn(true);
-			} catch (error) {
-				console.error("Session expired or invalid token", error);
-				localStorage.removeItem("token");
-				localStorage.removeItem("user");
-				setUser(null);
-				setIsLoggedIn(false);
-			}
-		};
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setIsLoggedIn(true);
+  };
 
-		verifyToken();}, []);	
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setIsLoggedIn(false);
+  };
 
-	const handleLogin = (userData) => {
-		setUser(userData);
-		setIsLoggedIn(true);
-	};
+  // ✅ Added: show nothing while verifying token (prevents Login flash on refresh)
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
 
-	const handleLogout = () => {
-		localStorage.removeItem("token");
-		localStorage.removeItem("user");
-		setUser(null);
-		setIsLoggedIn(false);
-	};
-
-	return (
-		<div className="App">
-			{isLoggedIn ? (
-				<BrowserRouter>
-					<Routes>
-						<Route path="/" element={<Homepage user={user} onLogout={handleLogout} />} />
-						<Route path="/wedding" element={<Wedding />} />
-						<Route path="/birthday" element={<Birthday />} />
-						<Route path="/meeting" element={<Meeting />} />
-						<Route path="/houseparty" element={<HouseParty />} />
-						<Route path="/vendors" element={<Vendors />} />
-						<Route path="/bookings" element={<Bookings user={user} />} />
-					</Routes>
-				</BrowserRouter>
-			) : (
-				<Login onLogin={handleLogin} />
-			)}
-		</div>
-	);
+  return (
+    // ✅ Fixed: BrowserRouter must wrap everything — moved outside the conditional
+    // so direct URL visits like /bookings work correctly when logged in
+    <BrowserRouter>
+      <div className="App">
+        <Routes>
+          {/* ✅ If not logged in, all routes redirect to Login */}
+          {!isLoggedIn ? (
+            <>
+              <Route path="/login" element={<Login onLogin={handleLogin} />} />
+              <Route path="*"      element={<Navigate to="/login" replace />} />
+            </>
+          ) : (
+            <>
+              <Route path="/"           element={<Homepage user={user} onLogout={handleLogout} />} />
+              <Route path="/wedding"    element={<Wedding />} />
+              <Route path="/birthday"   element={<Birthday />} />
+              <Route path="/meeting"    element={<Meeting />} />
+              <Route path="/houseparty" element={<HouseParty />} />
+              <Route path="/vendors"    element={<Vendors />} />
+              <Route path="/bookings"   element={<Bookings user={user} />} />
+              {/* Redirect unknown routes to home */}
+              <Route path="*"           element={<Navigate to="/" replace />} />
+            </>
+          )}
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
 }
 
 export default App;
