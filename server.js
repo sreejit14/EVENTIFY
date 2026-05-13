@@ -60,9 +60,128 @@ const Message = mongoose.model('Message', messageSchema);
 
 // ── Static Vendor Data ───────────────────────────────────────────────────────
 const vendors = [
-  { _id: '1', name: "Gourmet Delights Catering",  description: "Premium catering services",  category: "catering",    eventTypes: ["wedding", "birthday"], rating: 4.8, priceRange: "₹50,000",  reviews: [] },
-  { _id: '4', name: "Elegant Events Decor",        description: "Decoration solutions",        category: "decoration",  eventTypes: ["wedding"],             rating: 4.9, priceRange: "₹20,000",  reviews: [] },
-  { _id: '7', name: "Grand Ballroom Events",       description: "Luxurious ballrooms",         category: "venue",       eventTypes: ["wedding"],             rating: 4.8, priceRange: "₹200,000", reviews: [] }
+  // Catering
+  {
+    _id: '1',
+    name: "Gourmet Delights Catering",
+    description: "Premium catering with live counters, multi-cuisine menus, and professional serving staff for all event sizes.",
+    category: "catering",
+    eventTypes: ["wedding", "birthday", "meeting"],
+    rating: 4.8,
+    priceRange: "₹40,000-₹80,000",
+    contact: "+91 98765 43210",
+    image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600&auto=format&fit=crop",
+    services: ["Multi-cuisine menu", "Live counters", "Serving staff", "Hygiene certified"],
+    reviews: []
+  },
+  {
+    _id: '2',
+    name: "Spice Symphony Caterers",
+    description: "Authentic Indian and continental cuisine specialists with over 15 years of experience in large-scale events.",
+    category: "catering",
+    eventTypes: ["wedding", "houseparty", "birthday"],
+    rating: 4.6,
+    priceRange: "₹30,000-₹60,000",
+    contact: "+91 91234 56789",
+    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop",
+    services: ["Traditional thali", "Dessert counters", "Jain options", "On-site cooking"],
+    reviews: []
+  },
+  {
+    _id: '3',
+    name: "Royal Feast Services",
+    description: "Luxury catering service specialising in Mughlai, continental and fusion menus for premium weddings and corporate events.",
+    category: "catering",
+    eventTypes: ["wedding", "meeting"],
+    rating: 4.7,
+    priceRange: "₹60,000-₹1,20,000",
+    contact: "+91 99887 76655",
+    image: "https://images.unsplash.com/photo-1567521464027-f127ff144326?w=600&auto=format&fit=crop",
+    services: ["Mughlai cuisine", "Fusion platters", "Private chef", "Cocktail snacks"],
+    reviews: []
+  },
+
+  // Decoration
+  {
+    _id: '4',
+    name: "Elegant Events Decor",
+    description: "Stunning decoration solutions from floral arrangements to theme-based setups tailored for every occasion.",
+    category: "decoration",
+    eventTypes: ["wedding", "birthday"],
+    rating: 4.9,
+    priceRange: "₹15,000-₹40,000",
+    contact: "+91 98001 12345",
+    image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&auto=format&fit=crop",
+    services: ["Theme setup", "Floral styling", "Lighting design", "Stage decor"],
+    reviews: []
+  },
+  {
+    _id: '5',
+    name: "Dream Decor Studio",
+    description: "Creative decoration studio offering balloon art, photo booths, LED setups and custom backdrops for all events.",
+    category: "decoration",
+    eventTypes: ["birthday", "houseparty", "wedding"],
+    rating: 4.7,
+    priceRange: "₹10,000-₹30,000",
+    contact: "+91 90000 55566",
+    image: "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=600&auto=format&fit=crop",
+    services: ["Balloon art", "Photo booths", "LED walls", "Custom backdrops"],
+    reviews: []
+  },
+  {
+    _id: '6',
+    name: "Blossom & Bloom Decor",
+    description: "Specialised floral decoration service for weddings and intimate gatherings with fresh and artificial flower arrangements.",
+    category: "decoration",
+    eventTypes: ["wedding", "meeting"],
+    rating: 4.8,
+    priceRange: "₹20,000-₹50,000",
+    contact: "+91 87654 32109",
+    image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&auto=format&fit=crop",
+    services: ["Fresh floral arches", "Centrepieces", "Aisle decor", "Entrance decoration"],
+    reviews: []
+  },
+
+  // Venue
+  {
+    _id: '7',
+    name: "Grand Ballroom Events",
+    description: "Luxurious ballroom venue with state-of-the-art sound, lighting and catering infrastructure for up to 1000 guests.",
+    category: "venue",
+    eventTypes: ["wedding", "meeting"],
+    rating: 4.8,
+    priceRange: "₹1,50,000-₹3,00,000",
+    contact: "+91 98100 77788",
+    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&auto=format&fit=crop",
+    services: ["Event space", "Parking support", "Power backup", "Guest seating"],
+    reviews: []
+  },
+  {
+    _id: '8',
+    name: "The Garden Retreat",
+    description: "Beautiful outdoor garden venue perfect for intimate weddings, birthdays and house parties with natural surroundings.",
+    category: "venue",
+    eventTypes: ["wedding", "birthday", "houseparty"],
+    rating: 4.6,
+    priceRange: "₹50,000-₹1,20,000",
+    contact: "+91 92233 44556",
+    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&auto=format&fit=crop",
+    services: ["Open garden", "Lawn seating", "Natural lighting", "Indoor backup"],
+    reviews: []
+  },
+  {
+    _id: '9',
+    name: "Skyline Convention Centre",
+    description: "Modern convention centre with multiple halls, AV equipment and professional event management support for corporate events.",
+    category: "venue",
+    eventTypes: ["meeting", "wedding"],
+    rating: 4.7,
+    priceRange: "₹80,000-₹2,00,000",
+    contact: "+91 95544 33221",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&fit=crop",
+    services: ["Multiple halls", "AV equipment", "Wi-Fi", "Valet parking"],
+    reviews: []
+  }
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
