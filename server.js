@@ -323,6 +323,31 @@ app.delete('/api/bookings/:bookingId', auth, async (req, res) => {
   }
 });
 
+// ── Review Routes ────────────────────────────────────────────────────────────
+// ✅ Added: called from Bookings.js after payment
+app.post('/api/reviews', auth, async (req, res) => {
+  try {
+    const { vendorId, rating, comment } = req.body;
+    if (!vendorId || !rating || !comment)
+      return res.status(400).json({ message: 'Missing required fields' });
+
+    const user = await User.findById(req.user.id).select('name');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const review = await Review.create({
+      vendorId,
+      userId:  req.user.id,
+      name:    user.name,
+      rating,
+      comment
+    });
+    res.status(201).json(review);
+  } catch (error) {
+    console.error('Review error:', error);
+    res.status(500).json({ message: 'Failed to submit review' });
+  }
+});
+
 // ── Message Routes ───────────────────────────────────────────────────────────
 app.post('/api/messages/send', async (req, res) => {
   try {
